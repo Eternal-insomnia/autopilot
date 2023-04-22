@@ -1,0 +1,3 @@
+﻿  Main.cpp
+Main.obj : warning LNK4075: не учитывается "/EDITANDCONTINUE" из-за спецификации "/INCREMENTAL:NO"
+  UmmUhh.vcxproj -> C:\cv_tests\UmmUhh\x64\Debug\UmmUhh.exe
