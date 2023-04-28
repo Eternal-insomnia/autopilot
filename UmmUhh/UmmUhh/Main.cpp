@@ -26,13 +26,13 @@ Mat hwnd2mat(HWND hwnd)
     RECT desksize;
     GetClientRect(desktop, &desksize);  //change this to whatever size you want to resize to
 
-    srcheight = desksize.bottom;
-    srcwidth = desksize.right;
+    srcheight = windowsize.bottom; //u can use desksize.bottom and rigth but eto ne obyazatel'no
+    srcwidth = windowsize.right;
 
-    //height = windowsize.bottom;
-    //width = windowsize.right;
-    height = desksize.bottom;
-    width = desksize.right;
+    height = windowsize.bottom; // <-- масштабирует размер захватываемого окна под созданное окно(’”…Ќя)
+    width = windowsize.right;
+    //height = desksize.bottom;
+    //width = desksize.right;
 
     src.create(height, width, CV_8UC4);
 
@@ -77,18 +77,17 @@ auto process_img(Mat& image)
 
     Mat processed_img_stage2;
 
-    cvtColor(processed_img, processed_img_stage2, cv::COLOR_BGR2GRAY);
+    cvtColor(processed_img, processed_img_stage2, COLOR_BGR2HSV);
 
     Mat processed_img_stage3;
 
-    Canny(processed_img_stage2, processed_img_stage3, 200, 300);
+    inRange(processed_img_stage2, Scalar(123, 9, 200), Scalar(255, 200, 255), processed_img_stage3); //по HSV он будет 181, 208, 150
+
+    //Mat processed_img_fin;
+
+    //addWeighted(processed_img_stage4, 1.0, processed_img_stage5, 1.0, 0.0, processed_img_fin); //дл€ соединени€ нескольких фильтров
 
     return processed_img_stage3;
-}
-
-auto press_key(int num)
-{
-    return;
 }
 
 int main(int argc, char** argv)
@@ -97,12 +96,10 @@ int main(int argc, char** argv)
     //namedWindow("output", WINDOW_NORMAL);
     int key = 0;
 
-    int W = 0x11; //key number(i think)
-
     while (key != 27)
     {
         //HWND hwndDesktop = GetWindow(GetCapture(), 1);
-        auto s = FindWindowA(NULL, "Minecraft* 1.19 - ќдиночна€ игра");
+        auto s = FindWindowA(NULL, "Grand Theft Auto V");//Grand Theft Auto V | opencv_filter_test - Paint
         HWND hwndDesktop = s;
         //std::cout << hwndDesktop;
 
@@ -114,9 +111,9 @@ int main(int argc, char** argv)
         imshow("output", src);
 
         auto new_screen = process_img(src);
-        imshow("фы", new_screen);
+        imshow("фылтр", new_screen);
 
-        key = waitKey(60); // you can change wait time
+        key = waitKey(27); // you can change wait time
     }
 
 }

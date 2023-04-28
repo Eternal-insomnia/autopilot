@@ -24,6 +24,7 @@
     <ProjectGuid>{7127f582-6534-4a71-a818-f93581c68c97}</ProjectGuid>
     <RootNamespace>UmmUhh</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>FilterForAutopilot</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -71,8 +72,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\cv_tests\opencv\build\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\cv_tests\opencv\build\x64\vc16\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>Z:\autopilot-main\opencv\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>Z:\autopilot-main\opencv\build\x64\vc16\lib;$(LibraryPath)</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
