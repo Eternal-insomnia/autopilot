@@ -4,6 +4,13 @@
 
 using namespace std;
 
+enum FLIGHT_MODES
+{
+	TAKEOFF,
+	LANDING,
+	FLY
+};
+
 void mouseSim(HWND windowHandle)
 {
 	//PODLIVA
@@ -47,31 +54,74 @@ void kbdSim(ABOBA key, DWORD time = 100)
 	SendInput(1, &input, sizeof(INPUT));
 }
 
-void goStraight()
+void goUp()
 {
 	kbdSim('W');
-	return;
 }
-void goLeft()
-{
-	kbdSim('A');
-	return;
-}
-void goRight()
-{
-	kbdSim('D');
-	return;
-}
-void goBack()
+void goDown()
 {
 	kbdSim('S');
-	return;
+}
+
+void pitchRight()
+{
+	//kbdSim('E');
+	kbdSim(102);
+}
+
+void pitchLeft() 
+{
+	//kbdSim('Q');
+	kbdSim(100); // num left
+}
+
+void bendForward()
+{
+	kbdSim(104); // numpad key up
+}
+void bendBackward()
+{
+	kbdSim(98); // numpad key down
+}
+
+void controlSystem(FLIGHT_MODES mode)
+{
+	switch (mode)
+	{
+	case TAKEOFF:
+		goUp();
+	break;
+	case LANDING:
+		// check for obstacles down (?)
+		goDown();
+	break;
+	default:
+		if (1) // if mark is to the right from center on minimap
+			pitchRight();
+		else if (1) // if mark is to the left
+			pitchLeft();
+		//else
+			bendForward();
+		if (1) // if need to adjust height
+			goUp();
+		else if (1) // if helicopter is too high
+			goDown();
+	}
 }
 
 void main()
 {
-	HWND windowHandle = FindWindowA(NULL, "Minecraft* 1.19 - Одиночная игра"); //Minecraft* 1.19 - Одиночная игра
+
+	std::string window_name;
+	std::cout << "Enter window name: ";
+	std::cin >> window_name;
+
+	HWND windowHandle = FindWindowA(NULL, window_name.c_str()); //Minecraft* 1.19 - Одиночная игра
 	INPUT* key;
+
+	FLIGHT_MODES current_mode = FLY;
+	int counter = 0;
+
 	while (true)
 	{
 		if (windowHandle == NULL)
@@ -79,12 +129,24 @@ void main()
 		else
 		{
 			SetForegroundWindow(windowHandle);
-			Sleep(2000);
+			Sleep(10);
 
-			kbdSim(27);
-			kbdSim('W', 1000); //when u use this prog u need to switch kbd language no English
+			// check for height, whatever
+
+
+			// change mode when height reaches certain point
+			if (counter < 5000)
+				counter++;
+			else
+				current_mode = FLY;
+
+			controlSystem(current_mode);
 			
-			break;
+			//kbdSim(27);
+				
+			//kbdSim('W', 1000); //when u use this prog u need to switch kbd language no English
+			
+			//break;
 		}
 	}
 

@@ -1,4 +1,0 @@
-﻿  Main.cpp
-C:\cv_tests\test_keyboard_and_mouse_control\test_keyboard_and_mouse_control\Main.cpp(72,1): warning C4326: возвращаемый тип "main" должен быть "int", а не "void"
-C:\cv_tests\test_keyboard_and_mouse_control\test_keyboard_and_mouse_control\Main.cpp(74,9): warning C4101: key: неиспользованная локальная переменная
-  test_keyboard_and_mouse_control.vcxproj -> C:\cv_tests\test_keyboard_and_mouse_control\x64\Debug\test_keyboard_and_mouse_control.exe
