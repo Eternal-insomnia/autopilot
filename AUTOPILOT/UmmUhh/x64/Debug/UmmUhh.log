@@ -1,0 +1,4 @@
+﻿Z:\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8028: промежуточный каталог (x64\Debug\) содержит файлы, которые используются совместно с другим проектом (UmmUhh.vcxproj).  Это может привести к ошибкам очистки и перестроения.
+  Main.cpp
+Main.obj : warning LNK4075: не учитывается "/EDITANDCONTINUE" из-за спецификации "/INCREMENTAL:NO"
+  UmmUhh.vcxproj -> Z:\autopilot-main\UmmUhh\x64\Debug\FilterForAutopilot.exe
