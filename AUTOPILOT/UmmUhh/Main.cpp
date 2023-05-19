@@ -22,7 +22,7 @@ enum DIRECTION_INSTRUCTIONS
     RIGHT,
     FORWARD,
     BACKWARD,
-    LAND
+    LAND //? zachem?????
 };
 
 void mouseSim(HWND windowHandle)
@@ -160,22 +160,13 @@ auto process_img(Mat& image)
 {
     auto& orig_image = image;
 
-    Mat processed_img;
-
-
-    auto rotate = cv::getRotationMatrix2D(Point(((image.cols - 1), (image.rows - 1))), 0, 1);
-
-    warpAffine(image, processed_img, rotate, Point((image.cols - 1), (image.rows - 1)));
-
     Mat processed_img_stage2;
 
-    cvtColor(processed_img, processed_img_stage2, COLOR_BGR2HSV);
+    cvtColor(image, processed_img_stage2, COLOR_BGR2HSV);
 
     Mat processed_img_stage3;
 
     inRange(processed_img_stage2, Scalar(123, 9, 200), Scalar(255, 200, 255), processed_img_stage3); //по HSV он будет 181, 208, 150
-
-    //Canny(processed_img_stage2, processed_img_stage3, 200, 300);
 
     return processed_img_stage3;
 }
@@ -187,7 +178,8 @@ auto press_key(int num)
 
 std::vector<DIRECTION_INSTRUCTIONS> findDirection(Mat& img)
 {
-    cvtColor(img, img, COLOR_BGR2GRAY);
+    //cvtColor(img, img, COLOR_HSV2GRAY);
+    imshow("true balls", img);
     std::vector<Point> pixels;
     cv::findNonZero(img, pixels);
 
@@ -196,6 +188,7 @@ std::vector<DIRECTION_INSTRUCTIONS> findDirection(Mat& img)
     Point center(img.size().height, img.size().width);
 
     Point point = pixels.at(0);
+    cout << point << endl;
 
     if (point.x - center.x > 10)
         instructions.push_back(RIGHT);
@@ -218,10 +211,12 @@ void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
     {
     case TAKEOFF:
         goUp();
+        cout << "\nTAKEOFF MODE\n";
         break;
     case LANDING:
         // check for obstacles down (?)
         goDown();
+        cout << "\nLANDING MODE\n";
         break;
     default:
 
@@ -229,15 +224,19 @@ void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
         {
         case RIGHT:
             pitchRight();
+            cout << "GO RIGHT\n";
             break;
         case LEFT:
             pitchLeft();
+            cout << "GO LEFT\n";
             break;
         case FORWARD:
             bendForward();
+            cout << "GO FORWARD\n";
             break;
         case BACKWARD:
             bendBackward();
+            cout << "GO BACK\n";
             break;
         }
 
@@ -266,49 +265,43 @@ void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
 
 int main(int argc, char** argv)
 {
-    //HWND hwndDesktop = GetDesktopWindow();
-    //namedWindow("output", WINDOW_NORMAL);
     int key = 0;
 
     FLIGHT_MODES mode = TAKEOFF;
+    for (int i = 0; i < 10; i++)
+    {
+        controlSystem(FORWARD, mode);
+    }
+    mode = FLY;
+    cout << "\nponeslos'\n";
 
     while (key != 27) //1-999-289-9633 - cheatcode for helicopter
     {
-        //HWND hwndDesktop = GetWindow(GetCapture(), 1);
-        auto s = FindWindowA(NULL, "Grand Theft Auto V");//Grand Theft Auto V | opencv_filter_test - Paint
+        auto s = FindWindowA(NULL, "Grand Theft Auto V");//Grand Theft Auto V
         HWND hwndDesktop = s;
-        //std::cout << hwndDesktop;
-
         if (!hwndDesktop)
             continue;
 
         Mat src = hwnd2mat(hwndDesktop);
-        // you can do some image processing here
-        imshow("output", src);
+        //imshow("output", src);
 
-        //if (height > something)
-            //mode = FLY;
 
+        //filter
         auto new_screen = src;
-        imshow("фылтр", process_img(new_screen));
+        //imshow("filter", process_img(new_screen));
 
-        //Create the rectangle
+        //ROI u know
         Rect roi(0, 550, 220, 170);
-        //Create the cv::Mat with the ROI you need, where "image" is the cv::Mat you want to extract the ROI from
-        Mat image_roi = src(roi);
-        imshow("obrez", process_img(image_roi));
+        Mat image_roi = new_screen(roi);
+        Mat obrez = process_img(image_roi);
+        imshow("obrez", obrez);
 
-        if (mode != FLY)
-            controlSystem(LAND, mode);
-
-        for (auto instruction : findDirection(new_screen))
+        Sleep(10);
+        for (auto direction : findDirection(obrez))
         {
-            if (instruction == LAND)
-                mode = LANDING;
-            controlSystem(instruction, mode);
+            controlSystem(direction, mode);
         }
 
         key = waitKey(27); // 27 is ESC
     }
-
 }
