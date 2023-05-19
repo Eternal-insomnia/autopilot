@@ -178,29 +178,29 @@ auto press_key(int num)
 
 std::vector<DIRECTION_INSTRUCTIONS> findDirection(Mat& img)
 {
-    //cvtColor(img, img, COLOR_HSV2GRAY);
-    imshow("true balls", img);
+    std::vector<DIRECTION_INSTRUCTIONS> instructions;
     std::vector<Point> pixels;
     cv::findNonZero(img, pixels);
 
-    std::vector<DIRECTION_INSTRUCTIONS> instructions;
-
     if (pixels.size() == 0)
+    {
+        cout << "nothing here\n";
         return instructions;
+    }
 
-    Point center(img.size().height, img.size().width);
-
+    Point center(img.size().height/2, img.size().width/2);
 
     Point point = pixels.at(0);
-    cout << point << endl;
+    //cout << center << " " << point << endl;
+    //cout << img.size().height << " " << img.size().width << endl;
 
-    if (point.x - center.x > 10)
+    if (point.x - center.y > 10)
         instructions.push_back(RIGHT);
-    if (point.x - center.x < 10)
+    if (point.x - center.y < -10)
         instructions.push_back(LEFT);
-    if (point.y - center.y < 10)
+    if (point.y - center.x < -10)
         instructions.push_back(FORWARD);
-    if (point.y - center.y > 10)
+    if (point.y - center.x > 10)
         instructions.push_back(BACKWARD);
 
     if (instructions.size() == 0)
@@ -214,12 +214,12 @@ void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
     switch (mode)
     {
     case TAKEOFF:
-        goUp();
+        //goUp();
         cout << "\nTAKEOFF MODE\n";
         break;
     case LANDING:
         // check for obstacles down (?)
-        goDown();
+        //goDown();
         cout << "\nLANDING MODE\n";
         break;
     default:
@@ -227,19 +227,19 @@ void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
         switch (direction)
         {
         case RIGHT:
-            pitchRight();
+            //pitchRight();
             cout << "GO RIGHT\n";
             break;
         case LEFT:
-            pitchLeft();
+            //pitchLeft();
             cout << "GO LEFT\n";
             break;
         case FORWARD:
-            bendForward();
+            //bendForward();
             cout << "GO FORWARD\n";
             break;
         case BACKWARD:
-            bendBackward();
+            //bendBackward();
             cout << "GO BACK\n";
             break;
         }
@@ -272,24 +272,12 @@ int main(int argc, char** argv)
     int key = 0;
 
     FLIGHT_MODES mode = TAKEOFF;
-    for (int i = 0; i < 10; i++)
-    {
-        controlSystem(FORWARD, mode);
-    }
+    Sleep(1000);
     mode = FLY;
     cout << "\nponeslos'\n";
 
-
-    bool mode = false;
-
     while (key != 27) //1-999-289-9633 - cheatcode for helicopter
     {
-        if (pollKey() == 84)
-            mode = (mode == 1 ? 0 : 1);
-        
-        if (!mode)
-            continue;
-
         auto s = FindWindowA(NULL, "Grand Theft Auto V");//Grand Theft Auto V
         HWND hwndDesktop = s;
         if (!hwndDesktop)
@@ -304,15 +292,15 @@ int main(int argc, char** argv)
         //imshow("filter", process_img(new_screen));
 
         //ROI u know
-        Rect roi(0, 550, 220, 170);
+        Rect roi(17, 580, 188, 125);
         Mat image_roi = new_screen(roi);
         Mat obrez = process_img(image_roi);
-        imshow("obrez", obrez);
+        cv::imshow("obrez", obrez);
 
         Sleep(10);
-        for (auto direction : findDirection(obrez))
+        for (auto instructions : findDirection(obrez))
         {
-            controlSystem(direction, mode);
+            controlSystem(instructions, mode);
         }
 
         key = waitKey(27); // 27 is ESC
