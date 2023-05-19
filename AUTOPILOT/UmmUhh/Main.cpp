@@ -275,8 +275,17 @@ int main(int argc, char** argv)
     mode = FLY;
     cout << "\nponeslos'\n";
 
+
+    bool mode = false;
+
     while (key != 27) //1-999-289-9633 - cheatcode for helicopter
     {
+        if (pollKey() == 84)
+            mode = (mode == 1 ? 0 : 1);
+        
+        if (!mode)
+            continue;
+
         auto s = FindWindowA(NULL, "Grand Theft Auto V");//Grand Theft Auto V
         HWND hwndDesktop = s;
         if (!hwndDesktop)
