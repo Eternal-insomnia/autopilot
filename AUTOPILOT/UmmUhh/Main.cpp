@@ -185,7 +185,11 @@ std::vector<DIRECTION_INSTRUCTIONS> findDirection(Mat& img)
 
     std::vector<DIRECTION_INSTRUCTIONS> instructions;
 
+    if (pixels.size() == 0)
+        return instructions;
+
     Point center(img.size().height, img.size().width);
+
 
     Point point = pixels.at(0);
     cout << point << endl;
