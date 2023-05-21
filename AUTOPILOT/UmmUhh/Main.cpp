@@ -107,19 +107,39 @@ void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
     case TAKEOFF:
         for (int i = 0; i < 10; i++)
             goUp();
-        cout << "\nTAKEOFF MODE\n";
+        cout << "TAKEOFF MODE\n";
         break;
     case LANDING:
         // check for obstacles down (?)
+        if (direction == LEFT)
+        {
+            kbdSim('A');
+            kbdSim('H');
+            cout << "left\n";
+        }
+            
+        else if (direction == RIGHT)
+        {
+            kbdSim('D');
+            kbdSim('K');
+            cout << "right\n";
+        }
+
         if (direction == FORWARD)
-            bendForward();
+        {
+            kbdSim('U', 150);
+            cout << "forward\n";
+        }
         else if (direction == BACKWARD)
+        {
             bendBackward();
+            cout << "back\n";
+        }
         else
             kbdSim('S', 50);
         Sleep(50);
         
-        cout << "\nLANDING MODE\n";
+        //cout << "LANDING MODE\n";
         break;
     default:
 
@@ -261,31 +281,69 @@ std::vector<DIRECTION_INSTRUCTIONS> findDirection(Mat& img)
     Point center(img.size().height / 2, img.size().width / 2);
 
     Point point = pixels.at(0);
+    point.x += 4; // absolutniy center of point
     //cout << center << " " << point << endl;
     //cout << img.size().height << " " << img.size().width << endl;
 
-    if ((point.x - center.y > 10) || ((point.y - center.x > 20) && (point.x - center.y > 0)))
+    if ((point.x - center.y > 5) || ((point.y - center.x > 20) && (point.x - center.y > 0)))
     {
         instructions.push_back(RIGHT);
         used++;
     }
-    if ((point.x - center.y < -10) || ((point.y - center.x > 20) && (point.x - center.y <= 0)))
+    if ((point.x - center.y < 5) || ((point.y - center.x > 20) && (point.x - center.y <= 0)))
     {
         instructions.push_back(LEFT);
         used++;
     }
-    if (point.y - center.x < -30)
+    if (point.y - center.x < -10)
     {
         instructions.push_back(FORWARD);
         used++;
     }
-    if (point.y - center.x > 10)
+    if ((point.y - center.x > 10) || ((point.y - center.x < -10) && (point.y - center.x > -30)))
     {
         instructions.push_back(BACKWARD);
         used++;
     }
     if (used == 0)
         instructions.push_back(LAND);
+
+    return instructions;
+}
+
+std::vector<DIRECTION_INSTRUCTIONS> landDirection(Mat& img)
+{
+    std::vector<DIRECTION_INSTRUCTIONS> instructions;
+    std::vector<Point> pixels;
+    cv::findNonZero(img, pixels);
+
+    if (pixels.size() < 5)
+    {
+        cout << "nothing here\n";
+        return instructions;
+    }
+
+    Point center(img.size().height / 2, img.size().width / 2);
+
+    Point point = pixels.at(0);
+    point.x += 4; // absolutniy center of point
+
+    if ((point.x - center.y > 5) || ((point.y - center.x > 20) && (point.x - center.y > 0)))
+    {
+        instructions.push_back(RIGHT);
+    }
+    if ((point.x - center.y < 5) || ((point.y - center.x > 20) && (point.x - center.y <= 0)))
+    {
+        instructions.push_back(LEFT);
+    }
+    if (point.y - center.x < -2)
+    {
+        instructions.push_back(FORWARD);
+    }
+    if (point.y - center.x > 4)
+    {
+        instructions.push_back(BACKWARD);
+    }
 
     return instructions;
 }
@@ -300,8 +358,16 @@ int main(int argc, char** argv)
     cout << "y\n";
     kbdSim('W', 5000);
 
-    while (key != 27) //1-999-289-9633 - cheatcode for helicopter
+    bool check = false; //poka ne rabotaet
+
+    while (key != 27) //1-999-289-9633 or BUZZ-OFF - cheatcode for helicopter(гелiкоптир, гвiнторкил, воздушна цiль)
     {
+        //if (pollKey() == 't')
+        //    check = (check == 1 ? 0 : 1);
+
+        //if (!check)
+        //    continue;
+
         auto s = FindWindowA(NULL, "Grand Theft Auto V");//Grand Theft Auto V
         HWND hwndDesktop = s;
         if (!hwndDesktop)
@@ -324,12 +390,13 @@ int main(int argc, char** argv)
         Sleep(10);
         for (auto instructions : findDirection(obrez))
         {
-            controlSystem(instructions, mode);
             if (instructions == LAND)
             {
                 mode = LANDING;
+                //instructions : landDirection(obrez);
                 //if (high == 0) continue;
             }
+            controlSystem(instructions, mode);
         }
 
         key = waitKey(27); // 27 is ESC
