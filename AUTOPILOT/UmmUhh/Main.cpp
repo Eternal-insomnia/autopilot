@@ -22,8 +22,10 @@ enum DIRECTION_INSTRUCTIONS
     RIGHT,
     FORWARD,
     BACKWARD,
-    LAND //? zachem?????
+    LAND 
 };
+
+std::vector<DIRECTION_INSTRUCTIONS> findDirection(Mat& img);
 
 void mouseSim(HWND windowHandle)
 {
@@ -80,23 +82,87 @@ void goDown()
 
 void pitchRight()
 {
-    kbdSim(102); // num key right(6)
+    kbdSim('D');
 }
 
 void pitchLeft()
 {
-    kbdSim(100); // num key left(4)
+    kbdSim('A');
 }
 
 void bendForward()
 {
-    kbdSim(104); // numpad key up(8)
+    kbdSim('U'); //perenaznachit' keys in game
 }
 
 void bendBackward()
 {
-    kbdSim(101); // numpad key down(5)
+    kbdSim('J'); //perenaznachit' keys in game
 }
+
+void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
+{
+    switch (mode)
+    {
+    case TAKEOFF:
+        for (int i = 0; i < 10; i++)
+            goUp();
+        cout << "\nTAKEOFF MODE\n";
+        break;
+    case LANDING:
+        // check for obstacles down (?)
+        kbdSim('S', 50);
+        Sleep(50);
+        
+        cout << "\nLANDING MODE\n";
+        break;
+    default:
+
+        switch (direction)
+        {
+        case RIGHT:
+            pitchRight();
+            cout << "GO RIGHT\n";
+            break;
+        case LEFT:
+            pitchLeft();
+            cout << "GO LEFT\n";
+            break;
+        case FORWARD:
+            bendForward();
+            goUp();
+            cout << "GO FORWARD\n";
+            break;
+        case BACKWARD:
+            bendBackward();
+            cout << "GO BACK\n";
+            break;
+        }
+
+        //if (height < something)
+        //goUp();
+        //if (height > something)
+            //goDown();
+
+
+        //??? NIZHE DELETE ???
+
+
+
+        //if (1) // if mark is to the right from center on minimap
+        //    pitchRight();
+        //else if (1) // if mark is to the left
+        //    pitchLeft();
+        ////else
+        //bendForward();
+        //if (1) // if need to adjust height
+        //    goUp();
+        //else if (1) // if helicopter is too high
+        //    goDown();
+    }
+}
+
+//PROCESS IMAGE BLOCK
 
 Mat hwnd2mat(HWND hwnd)
 {
@@ -121,8 +187,6 @@ Mat hwnd2mat(HWND hwnd)
     srcheight = desksize.bottom;
     srcwidth = desksize.right;
 
-    //height = windowsize.bottom; // <-- масштабирует размер захватываемого окна под созданное окно(’”…Ќя)
-    //width = windowsize.right;
     height = desksize.bottom;
     width = desksize.right;
 
@@ -181,100 +245,55 @@ std::vector<DIRECTION_INSTRUCTIONS> findDirection(Mat& img)
     std::vector<DIRECTION_INSTRUCTIONS> instructions;
     std::vector<Point> pixels;
     cv::findNonZero(img, pixels);
+    int used = 0;
 
-    if (pixels.size() == 0)
+    if (pixels.size() < 5)
     {
         cout << "nothing here\n";
         return instructions;
     }
 
-    Point center(img.size().height/2, img.size().width/2);
+    Point center(img.size().height / 2, img.size().width / 2);
 
     Point point = pixels.at(0);
     //cout << center << " " << point << endl;
     //cout << img.size().height << " " << img.size().width << endl;
 
-    if (point.x - center.y > 10)
+    if ((point.x - center.y > 10) || ((point.y - center.x > 20) && (point.x - center.y > 0)))
+    {
         instructions.push_back(RIGHT);
-    if (point.x - center.y < -10)
+        used++;
+    }
+    if ((point.x - center.y < -10) || ((point.y - center.x > 20) && (point.x - center.y <= 0)))
+    {
         instructions.push_back(LEFT);
-    if (point.y - center.x < -10)
+        used++;
+    }
+    if (point.y - center.x < -30)
+    {
         instructions.push_back(FORWARD);
+        used++;
+    }
     if (point.y - center.x > 10)
+    {
         instructions.push_back(BACKWARD);
-
-    if (instructions.size() == 0)
+        used++;
+    }
+    if (used == 0)
         instructions.push_back(LAND);
 
     return instructions;
 }
 
-void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
-{
-    switch (mode)
-    {
-    case TAKEOFF:
-        //goUp();
-        cout << "\nTAKEOFF MODE\n";
-        break;
-    case LANDING:
-        // check for obstacles down (?)
-        //goDown();
-        cout << "\nLANDING MODE\n";
-        break;
-    default:
-
-        switch (direction)
-        {
-        case RIGHT:
-            //pitchRight();
-            cout << "GO RIGHT\n";
-            break;
-        case LEFT:
-            //pitchLeft();
-            cout << "GO LEFT\n";
-            break;
-        case FORWARD:
-            //bendForward();
-            cout << "GO FORWARD\n";
-            break;
-        case BACKWARD:
-            //bendBackward();
-            cout << "GO BACK\n";
-            break;
-        }
-
-        //if (height < something)
-        //goUp();
-        //if (height > something)
-            //goDown();
-
-
-        //??? NIZHE DELETE ???
-
-
-
-        //if (1) // if mark is to the right from center on minimap
-        //    pitchRight();
-        //else if (1) // if mark is to the left
-        //    pitchLeft();
-        ////else
-        //bendForward();
-        //if (1) // if need to adjust height
-        //    goUp();
-        //else if (1) // if helicopter is too high
-        //    goDown();
-    }
-}
-
 int main(int argc, char** argv)
 {
     int key = 0;
+    FLIGHT_MODES mode = FLY;
 
-    FLIGHT_MODES mode = TAKEOFF;
-    Sleep(1000);
-    mode = FLY;
     cout << "\nponeslos'\n";
+    Sleep(3000);
+    cout << "y\n";
+    kbdSim('W', 5000);
 
     while (key != 27) //1-999-289-9633 - cheatcode for helicopter
     {
@@ -295,12 +314,17 @@ int main(int argc, char** argv)
         Rect roi(17, 580, 188, 125);
         Mat image_roi = new_screen(roi);
         Mat obrez = process_img(image_roi);
-        cv::imshow("obrez", obrez);
+        //imshow("obrez", obrez);
 
         Sleep(10);
         for (auto instructions : findDirection(obrez))
         {
             controlSystem(instructions, mode);
+            if (instructions == LAND)
+            {
+                mode = LANDING;
+                //if (high == 0) continue;
+            }
         }
 
         key = waitKey(27); // 27 is ESC
