@@ -111,7 +111,12 @@ void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
         break;
     case LANDING:
         // check for obstacles down (?)
-        kbdSim('S', 50);
+        if (direction == FORWARD)
+            bendForward();
+        else if (direction == BACKWARD)
+            bendBackward();
+        else
+            kbdSim('S', 50);
         Sleep(50);
         
         cout << "\nLANDING MODE\n";
