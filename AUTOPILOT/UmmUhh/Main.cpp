@@ -1,5 +1,6 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
+#include "opencv2/ml.hpp"
 #include <vector>
 #include <Windows.h>
 #include <iostream>
@@ -361,7 +362,8 @@ std::vector<DIRECTION_INSTRUCTIONS> landDirection(Mat& img)
     return instructions;
 }
 
-int getHeight(cv::Mat matTestingNumbers)
+int getHeight(cv::Mat matTestingNumbers, std::vector<ContourWithData>& allContoursWithData, std::vector<ContourWithData>& validContoursWithData,
+              cv::Ptr<cv::ml::KNearest> kNearest)
 {
     //cv::Mat matTestingNumbers = cv::imread("test1.png");            // read in the test numbers image
 
@@ -452,7 +454,7 @@ int getHeight(cv::Mat matTestingNumbers)
 
     cv::imshow("matTestingNumbers", matTestingNumbers);     // show input image with green boxes drawn around found digits
 
-    return atoi(strFinalString);
+    return atoi(strFinalString.c_str());
 }
 
 int main(int argc, char** argv)
@@ -467,7 +469,7 @@ int main(int argc, char** argv)
 
     bool check = false; //poka ne rabotaet
 
-    td::vector<ContourWithData> allContoursWithData;           // declare empty vectors,
+    std::vector<ContourWithData> allContoursWithData;           // declare empty vectors,
     std::vector<ContourWithData> validContoursWithData;         // we will fill these shortly
 
 
@@ -541,7 +543,7 @@ int main(int argc, char** argv)
 
         int height = 0;
         if (mode != LANDING)
-            height = getHeight(height_screen);
+            height = getHeight(height_screen, allContoursWithData, validContoursWithData, kNearest);
 
         if (mode == TAKEOFF && height > 150)
             mode = FLY;
