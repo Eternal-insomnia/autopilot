@@ -1,8 +1,10 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
+#include "opencv2/text.hpp"
 #include <vector>
 #include <Windows.h>
 #include <iostream>
+#include <thread>
 
 using namespace std;
 using namespace cv;
@@ -100,11 +102,12 @@ void bendBackward()
     kbdSim('J'); //perenaznachit' keys in game
 }
 
-void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
+void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode, int & height)
 {
     switch (mode)
     {
     case TAKEOFF:
+        // goUp();
         for (int i = 0; i < 10; i++)
             goUp();
         cout << "TAKEOFF MODE\n";
@@ -164,13 +167,13 @@ void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode)
             break;
         }
 
-        //if (height < something)
-        //goUp();
-        //if (height > something)
-            //goDown();
+        if (height < 150)
+            goUp();
+        if (height > 300)
+            goDown();
 
 
-        //??? NIZHE DELETE ???
+        //??? NIZHE DELETE ??? pohui
 
 
 
@@ -255,7 +258,7 @@ auto process_img(Mat& image)
 
     Mat processed_img_stage3;
 
-    inRange(processed_img_stage2, Scalar(123, 9, 200), Scalar(255, 200, 255), processed_img_stage3); //по HSV он будет 181, 208, 150
+    inRange(processed_img_stage2, Scalar(123, 9, 200), Scalar(255, 200, 255), processed_img_stage3); //пїЅпїЅ HSV пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 181, 208, 150
 
     return processed_img_stage3;
 }
@@ -348,10 +351,40 @@ std::vector<DIRECTION_INSTRUCTIONS> landDirection(Mat& img)
     return instructions;
 }
 
+void processHeight(int& height, bool& stopSign, Mat & picture, Ptr<OCRTesseract> ocr, bool & startReadingHeight)
+{
+    while (!startReadingHeight)
+        Sleep(100);
+
+    while (!stopSign)
+    {
+        // do shit
+        std::string height_string;
+        ocr->run(picture, height_string);
+        // we get Height: XXX (YYY) message and need YYY
+        bool reading = false;
+        std::string result_number;
+        for (int i = 0; i < height_string.length(); ++i)
+        {
+            if (height_string[i] == ')')
+                break;
+
+            if (reading)
+                result_number += height_string[i];
+
+            if (height_string[i] == '(')
+                reading = true;
+        }
+
+        height = std::stoi(result_number);
+        Sleep(500);
+    }
+}
+
 int main(int argc, char** argv)
 {
     int key = 0;
-    FLIGHT_MODES mode = FLY;
+    FLIGHT_MODES mode = TAKEOFF;
 
     cout << "\nponeslos'\n";
     Sleep(3000);
@@ -360,7 +393,16 @@ int main(int argc, char** argv)
 
     bool check = false; //poka ne rabotaet
 
-    while (key != 27) //1-999-289-9633 or BUZZ-OFF - cheatcode for helicopter(гелiкоптир, гвiнторкил, воздушна цiль)
+    auto ocr = OCRTesseract::create();
+
+    Mat picture;
+    int height = 0;
+    bool stopSign = false;
+    bool startReadingHeight = false;
+
+    std::thread readHeight(processHeight, height, stopSign, picture, ocr, startReadingHeight);
+
+    while (key != 27) //1-999-289-9633 or BUZZ-OFF - cheatcode for helicopter(пїЅпїЅпїЅiпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅiпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅiпїЅпїЅ)
     {
         //if (pollKey() == 't')
         //    check = (check == 1 ? 0 : 1);
@@ -376,10 +418,16 @@ int main(int argc, char** argv)
         Mat src = hwnd2mat(hwndDesktop);
         //imshow("output", src);
 
+        //!!! HEIGHT!!! ! ! ! ! !!! !KIO !JIOFJIOEJI
+        Rect roi_height(1, 2, 3, 4); // Р·Р°РєРёРґС‹РІР°РµРј РІСЃРµ СЃРѕРѕР±С‰РµРЅРёРµ: Height: XXX (XXX) meters
+        picture = new_screen(roi_height);
+
+        startReadingHeight = true;
 
         //filter
         auto new_screen = src;
         //imshow("filter", process_img(new_screen));
+
 
         //ROI u know
         Rect roi(17, 580, 188, 125);
@@ -387,6 +435,15 @@ int main(int argc, char** argv)
         Mat obrez = process_img(image_roi);
         //imshow("obrez", obrez);
 
+        if (mode == TAKEOFF)
+        {
+            controlSystem(LAND, mode, height); // first argument doesnt matter
+            if (height > 150)
+                mode = FLY;
+            else
+                continue;
+        }
+        // suda ne idem, poka ne naberem visotu)
         Sleep(10);
         for (auto instructions : findDirection(obrez))
         {
@@ -396,9 +453,11 @@ int main(int argc, char** argv)
                 //instructions : landDirection(obrez);
                 //if (high == 0) continue;
             }
-            controlSystem(instructions, mode);
+            controlSystem(instructions, mode, height);
         }
 
         key = waitKey(27); // 27 is ESC
     }
+    stopSign = true;
+    readHeight.join();
 }
