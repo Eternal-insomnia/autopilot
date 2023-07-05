@@ -24,36 +24,10 @@ enum DIRECTION_INSTRUCTIONS
     RIGHT,
     FORWARD,
     BACKWARD,
-    LAND 
+    LAND
 };
 
-std::vector<DIRECTION_INSTRUCTIONS> findDirection(Mat& img);
-
-void mouseSim(HWND windowHandle)
-{
-    //PODLIVA
-
-            // Get the window client area.
-    RECT rc;
-    GetClientRect(windowHandle, &rc);
-
-    // Convert the client area to screen coordinates.
-    POINT pt = { rc.left, rc.top };
-    POINT pt2 = { rc.right, rc.bottom };
-    ClientToScreen(windowHandle, &pt);
-    ClientToScreen(windowHandle, &pt2);
-    SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
-
-    // Confine the cursor.
-    ClipCursor(&rc);
-
-    SetCursorPos(0, 0);
-
-    SetCapture(windowHandle);
-    mouse_event(MOUSEEVENTF_ABSOLUTE, 100, 0, 0, 0);
-    SetCursorPos(0, 0);
-    ReleaseCapture();
-}
+//std::vector<DIRECTION_INSTRUCTIONS> findDirection(Mat& img);
 
 typedef short ABOBA;
 
@@ -102,7 +76,7 @@ void bendBackward()
     kbdSim('J'); //perenaznachit' keys in game
 }
 
-void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode, int & height)
+void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode, int& height)
 {
     switch (mode)
     {
@@ -120,7 +94,7 @@ void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode, int & he
             kbdSim('H');
             cout << "left\n";
         }
-            
+
         else if (direction == RIGHT)
         {
             kbdSim('D');
@@ -141,7 +115,7 @@ void controlSystem(DIRECTION_INSTRUCTIONS direction, FLIGHT_MODES mode, int & he
         else
             kbdSim('S', 50);
         Sleep(50);
-        
+
         //cout << "LANDING MODE\n";
         break;
     default:
@@ -258,15 +232,12 @@ auto process_img(Mat& image)
 
     Mat processed_img_stage3;
 
-    inRange(processed_img_stage2, Scalar(123, 9, 200), Scalar(255, 200, 255), processed_img_stage3); //пїЅпїЅ HSV пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 181, 208, 150
+    inRange(processed_img_stage2, Scalar(123, 9, 200), Scalar(255, 200, 255), processed_img_stage3); //our HSV code is 181, 208, 150
 
     return processed_img_stage3;
 }
 
-auto press_key(int num)
-{
-    return;
-}
+//FINDING THE DIRECTION
 
 std::vector<DIRECTION_INSTRUCTIONS> findDirection(Mat& img)
 {
@@ -351,7 +322,9 @@ std::vector<DIRECTION_INSTRUCTIONS> landDirection(Mat& img)
     return instructions;
 }
 
-void processHeight(int& height, bool& stopSign, Mat & picture, Ptr<OCRTesseract> ocr, bool & startReadingHeight)
+//HEIGHT BLOCK
+
+void processHeight(int& height, bool& stopSign, Mat& picture, Ptr<text::OCRTesseract> ocr, bool& startReadingHeight)
 {
     while (!startReadingHeight)
         Sleep(100);
@@ -393,16 +366,16 @@ int main(int argc, char** argv)
 
     bool check = false; //poka ne rabotaet
 
-    auto ocr = OCRTesseract::create();
+    auto ocr = text::OCRTesseract::create();
 
     Mat picture;
     int height = 0;
     bool stopSign = false;
     bool startReadingHeight = false;
 
-    std::thread readHeight(processHeight, height, stopSign, picture, ocr, startReadingHeight);
+    std::thread readHeight(processHeight, ref(height), ref(stopSign), ref(picture), ref(ocr), ref(startReadingHeight));
 
-    while (key != 27) //1-999-289-9633 or BUZZ-OFF - cheatcode for helicopter(пїЅпїЅпїЅiпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅiпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅiпїЅпїЅ)
+    while (key != 27) //1-999-289-9633 or BUZZ-OFF - cheatcode for helicopter(???i??????, ??i???????, ???????? ?i??)
     {
         //if (pollKey() == 't')
         //    check = (check == 1 ? 0 : 1);
@@ -418,15 +391,21 @@ int main(int argc, char** argv)
         Mat src = hwnd2mat(hwndDesktop);
         //imshow("output", src);
 
-        //!!! HEIGHT!!! ! ! ! ! !!! !KIO !JIOFJIOEJI
-        Rect roi_height(1, 2, 3, 4); // Р·Р°РєРёРґС‹РІР°РµРј РІСЃРµ СЃРѕРѕР±С‰РµРЅРёРµ: Height: XXX (XXX) meters
-        picture = new_screen(roi_height);
-
-        startReadingHeight = true;
 
         //filter
-        auto new_screen = src;
+        Mat new_screen = src;
         //imshow("filter", process_img(new_screen));
+
+        //!!! HEIGHT!!! ! ! ! ! !!! !KIO !JIOFJIOEJI
+        Rect roi_height(17, 580, 188, 125); // закидываем все сообщение: Height: XXX (XXX) meters
+        Mat test = new_screen(roi_height);
+        cvtColor(test, test, COLOR_BGR2GRAY);
+        threshold(test, test, 100, 255, THRESH_BINARY);
+        bitwise_not(test, test);
+        picture = test;
+        //imshow("picture", picture);
+
+        startReadingHeight = true;
 
 
         //ROI u know
