@@ -4,7 +4,7 @@
 #include <vector>
 #include <Windows.h>
 #include <iostream>
-#include <thread>
+//#include <thread>
 
 using namespace std;
 using namespace cv;
@@ -373,7 +373,7 @@ int main(int argc, char** argv)
     bool stopSign = false;
     bool startReadingHeight = false;
 
-    std::thread readHeight(processHeight, ref(height), ref(stopSign), ref(picture), ref(ocr), ref(startReadingHeight));
+    //std::thread readHeight(processHeight, ref(height), ref(stopSign), ref(picture), ref(ocr), ref(startReadingHeight));
 
     while (key != 27) //1-999-289-9633 or BUZZ-OFF - cheatcode for helicopter(???i??????, ??i???????, ???????? ?i??)
     {
@@ -399,11 +399,12 @@ int main(int argc, char** argv)
         //!!! HEIGHT!!! ! ! ! ! !!! !KIO !JIOFJIOEJI
         Rect roi_height(17, 580, 188, 125); // закидываем все сообщение: Height: XXX (XXX) meters
         Mat test = new_screen(roi_height);
-        cvtColor(test, test, COLOR_BGR2GRAY);
-        threshold(test, test, 100, 255, THRESH_BINARY);
-        bitwise_not(test, test);
+        //cvtColor(test, test, COLOR_BGR2GRAY);
+        //threshold(test, test, 100, 255, THRESH_BINARY);
+        //bitwise_not(test, test);
         picture = test;
-        //imshow("picture", picture);
+        imshow("picture", picture);
+        //processHeight(height, stopSign, picture, ocr, startReadingHeight);
 
         startReadingHeight = true;
 
@@ -438,5 +439,5 @@ int main(int argc, char** argv)
         key = waitKey(27); // 27 is ESC
     }
     stopSign = true;
-    readHeight.join();
+    //readHeight.join();
 }
